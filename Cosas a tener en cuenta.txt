@@ -1,0 +1,19 @@
+Cliente (navegador, app, curl)
+      |
+      | HTTP: POST /api/tasks/7/complete/
+      v
+URLs + Router                -> decide qué vista atiende la ruta
+      |
+      v
+Vista (ViewSet)              -> capa de PRESENTACIÓN: HTTP, permisos, códigos de estado
+      |
+      └── Serializer         -> traduce JSON <-> objetos y valida el formato de la entrada
+      |
+      v
+Servicio (TaskService)       -> capa de NEGOCIO: reglas, cálculos, coordinación
+      |
+      v
+Repositorio (TaskRepository) -> capa de ACCESO A DATOS: consultas
+      |
+      v
+ORM de Django -> SQL -> Base de datos
