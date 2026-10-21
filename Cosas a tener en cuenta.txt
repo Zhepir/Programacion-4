@@ -51,3 +51,15 @@ Petición
 4. LA VISTA
    → La vista (list, create, retrieve, update, destroy, etc.)
      se ejecuta con request.user disponible.
+
+     
+
+El flujo que usamos se llama Authorization Code (código de autorización), y es el recomendado para aplicaciones con servidor:
+1. Navegador → TaskFlow  : clic en "Ingresar con Google"
+2. TaskFlow  → Navegador : redirección a Google (client_id, redirect_uri, scope, state)
+3. Navegador → Google    : el usuario se loguea y acepta compartir sus datos
+4. Google    → Navegador : redirección a redirect_uri con ?code=...&state=...
+5. Navegador → TaskFlow  : entrega el code
+6. TaskFlow  → Google    : code + client_secret          (de servidor a servidor)
+7. Google    → TaskFlow  : tokens, incluido el ID token  (de servidor a servidor)
+8. TaskFlow  → Navegador : usuario logueado

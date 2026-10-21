@@ -4,6 +4,7 @@ from .models import Task
 from .repositories import TaskRepository
 import requests
 from django.core.cache import cache
+from .models import Project, ProjectMembership, Task
  
 
 class TaskService:
@@ -57,3 +58,18 @@ class HolidayService:
     @classmethod
     def is_holiday(cls, some_date) -> bool:
         return str(some_date) in cls.get_holidays(some_date.year)
+
+
+
+class MembershipService:
+    @staticmethod
+    def is_member(user, project) -> bool:
+        return ProjectMembership.objects.filter(project=project, user=user).exists()
+ 
+    @staticmethod
+    def is_admin(user, project) -> bool:
+        return ProjectMembership.objects.filter(project=project, user=user, role="admin").exists()
+ 
+    @staticmethod
+    def projects_for(user):
+        return Project.objects.filter(memberships__user=user).distinct().order_by("id")
