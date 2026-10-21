@@ -96,3 +96,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             "tasks",
             "created_at",
         ]
+
+
+#---------------------------------------------------------

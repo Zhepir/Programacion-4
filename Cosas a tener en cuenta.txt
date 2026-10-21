@@ -17,3 +17,37 @@ Repositorio (TaskRepository) -> capa de ACCESO A DATOS: consultas
       |
       v
 ORM de Django -> SQL -> Base de datos
+
+
+////////////////////
+
+Petición
+
+1. AUTENTICACIÓN
+   → Prueba cada clase de DEFAULT_AUTHENTICATION_CLASSES, en orden.
+
+     JWTAuthentication:
+     ¿Hay "Authorization: Bearer ..."?
+     ¿La firma y el vencimiento son válidos?
+
+     SessionAuthentication:
+     ¿Hay una cookie de sesión válida?
+
+     Resultado:
+     request.user = usuario o AnonymousUser
+     (si el token existe pero es inválido → 401 inmediato)
+
+2. PERMISOS
+   → Cada clase de permiso decide si sigue.
+
+     IsAuthenticated:
+     ¿request.user es un usuario real?
+
+     No → 401 o 403
+
+3. LÍMITES
+   → Throttling (Clase 8)
+
+4. LA VISTA
+   → La vista (list, create, retrieve, update, destroy, etc.)
+     se ejecuta con request.user disponible.
