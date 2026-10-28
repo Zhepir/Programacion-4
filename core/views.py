@@ -1,9 +1,11 @@
 from django.http import JsonResponse
 
-from rest_framework import viewsets, generics, permissions
+from django.shortcuts import get_object_or_404
+
+from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth.models import User
@@ -42,6 +44,29 @@ class ProjectViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             project = serializer.save()
             ProjectMembership.objects.create(project=project, user=self.request.user, role="admin")
+
+    @action(detail=True, methods=["post"])
+    def add_member(self, request, pk=None):
+        # get_object() ejecuta has_object_permission: como es POST, exige ser admin
+        project = self.get_object()
+
+        username = request.data.get("username")
+        role = request.data.get("role", "miembro")
+
+        if role not in dict(ProjectMembership.ROLE_CHOICES):
+            raise ValidationError({"role": "El rol debe ser 'admin' o 'miembro'."})
+
+        user = get_object_or_404(User, username=username)
+
+        if MembershipService.is_member(user, project):
+            raise ValidationError({"username": "El usuario ya es miembro del proyecto."})
+
+        membership = ProjectMembership.objects.create(project=project, user=user, role=role)
+
+        return Response(
+            {"project": project.id, "username": user.username, "role": membership.role},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 
