@@ -40,6 +40,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -226,5 +227,21 @@ LOGGING = {
     },
     "loggers": {
         "security": {"handlers": ["file"], "level": "WARNING"},
+    },
+}
+
+# --- Tiempo real (Clase 9) ---
+
+# --- Tiempo real (Clase 9) ---
+
+INSTALLED_APPS += [
+    "channels"
+]
+
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
