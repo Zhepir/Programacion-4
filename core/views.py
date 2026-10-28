@@ -1,3 +1,5 @@
+import logging
+
 from django.http import JsonResponse
 
 from django.shortcuts import get_object_or_404
@@ -5,24 +7,25 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth.models import User
 
-from .models import Project
+from .models import Project, ProjectMembership, SecurityLog
 from .repositories import TaskRepository
 from .serializers import ProjectSerializer, TaskSerializer
 from .serializer_auth import RegisterSerializer
 from .services import MembershipService, TaskService
 from .permissions import IsProjectAdminOrReadOnly
 from django.db import transaction
-from .models import Project, ProjectMembership
 
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .throttles import LoginRateThrottle
 
-
+security_logger = logging.getLogger("security")
 
 def health_check(request):
     return JsonResponse({
@@ -165,3 +168,23 @@ class SocialLoginJWTView(APIView):
     def get(self, request):
         refresh = RefreshToken.for_user(request.user)
         return Response({"refresh": str(refresh), "access": str(refresh.access_token)})
+
+
+class ThrottledTokenObtainPairView(TokenObtainPairView):
+    throttle_classes = [LoginRateThrottle]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except AuthenticationFailed:
+            ip = request.META.get("REMOTE_ADDR")
+            username = request.data.get("username", "")
+            SecurityLog.objects.create(
+                action="login_failed",
+                detail=f"usuario={username}",
+                ip_address=ip
+            )
+            security_logger.warning(
+                f"Login fallido para usuario {username} desde {ip}"
+            )
+            raise

@@ -1,3 +1,7 @@
+.venv\Scripts\Activate.ps1
+
+
+
 Cliente (navegador, app, curl)
       |
       | HTTP: POST /api/tasks/7/complete/

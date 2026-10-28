@@ -1,5 +1,7 @@
 from datetime import date
 
+import nh3
+
 from rest_framework import serializers
 
 from .models import Project, Task, Tag
@@ -42,6 +44,10 @@ class TaskSerializer(serializers.ModelSerializer):
                 "La fecha límite no puede ser en el pasado."
             )
         return value
+
+    def validate_description(self, value):
+        return nh3.clean(value, tags=set())
+
 
     def validate(self, data):
         # En un PATCH, "data" trae solo los campos enviados.

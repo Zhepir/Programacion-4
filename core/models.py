@@ -73,3 +73,13 @@ class ProjectMembership(models.Model):
  
     def __str__(self):
         return f"{self.user} - {self.project} ({self.role})"
+
+class SecurityLog(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    action = models.CharField(max_length=100)  # ej: "login_failed", "permission_denied"
+    detail = models.CharField(max_length=255, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.created_at:%Y-%m-%d %H:%M} {self.action} ({self.ip_address})"
